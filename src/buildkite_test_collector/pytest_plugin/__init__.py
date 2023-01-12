@@ -27,8 +27,7 @@ def pytest_configure(config):
 
     if env:
         plugin = BuildkitePlugin(Payload.init(env))
-        setattr(config, '_buildkite', plugin)
-        config.pluginmanager.register(plugin)
+        config.pluginmanager.register(plugin, name="_buildkite")
     else:
         warning("Unable to detect CI environment.  No test analytics will be sent.")
 
@@ -36,8 +35,7 @@ def pytest_configure(config):
 @pytest.hookimpl
 def pytest_unconfigure(config):
     """pytest_unconfigure hook callback"""
-    plugin = getattr(config, '_buildkite', None)
+    plugin = config.pluginmanager.get_plugin("_buildkite")
     if plugin:
         submit(plugin.payload)
-        del config._buildkite
         config.pluginmanager.unregister(plugin)
